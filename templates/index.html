@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telco Churn Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                Telco Customer Churn Portal
+            </h1>
+        </div>
+        <span class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full font-mono">v1.0.0</span>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left/Middle Columns: The Inputs -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Section 1: Single Customer Analyzer -->
+            <section class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold mb-1 text-slate-200">Single Customer Profiler</h2>
+                <p class="text-sm text-slate-400 mb-6">Input customer parameters to compute live risk assessments.</p>
+                
+                <form id="singlePredictForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Tenure (Months)</label>
+                        <input type="number" name="tenure" value="12" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Monthly Charges ($)</label>
+                        <input type="number" step="0.01" name="MonthlyCharges" value="70.00" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Total Charges ($)</label>
+                        <input type="number" step="0.01" name="TotalCharges" value="840.00" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Internet Service Type</label>
+                        <select name="InternetService_Fiber optic" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                            <option value="1">Fiber Optic</option>
+                            <option value="0">DSL / None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Contract Term</label>
+                        <select name="Contract_Two year" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                            <option value="0">Month-to-month / One Year</option>
+                            <option value="1">Two Year Contract</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Payment Method</label>
+                        <select name="PaymentMethod_Electronic check" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                            <option value="1">Electronic Check</option>
+                            <option value="0">Other Methods</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 pt-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-medium text-sm text-white py-3 px-4 rounded-lg shadow-lg shadow-indigo-600/20 transition-all cursor-pointer">
+                            Evaluate Churn Risk Score
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Section 2: Batch Processing -->
+            <section class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold mb-1 text-slate-200">Enterprise Batch Processing</h2>
+                <p class="text-sm text-slate-400 mb-6">Drop or upload a standardized customer matrix file (.csv) for mass inference.</p>
+                
+                <form id="batchPredictForm" class="space-y-4">
+                    <div class="border-2 border-dashed border-slate-700 hover:border-slate-500 rounded-xl p-8 text-center bg-slate-900/50 transition-colors cursor-pointer relative">
+                        <input type="file" id="csvFile" name="file" accept=".csv" required class="absolute inset-0 opacity-0 cursor-pointer">
+                        <svg class="mx-auto h-8 w-8 text-slate-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-sm text-slate-300" id="fileLabel">Click to upload or drag your CSV matrix here</p>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 font-medium text-sm text-white py-2.5 px-4 rounded-lg transition-all cursor-pointer">
+                        Execute Batch Evaluation
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- Right Column: Live Results Feed -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-24 space-y-6">
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl min-h-[400px] flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-md font-semibold text-slate-400 uppercase tracking-wider mb-6">Inference Output Engine</h2>
+                        
+                        <!-- Dynamic Single Prediction Container -->
+                        <div id="singleOutput" class="space-y-6 hidden">
+                            <div class="p-4 rounded-xl border flex flex-col items-center justify-center text-center bg-opacity-10" id="badgeContainer">
+                                <span class="text-xs uppercase font-mono tracking-widest text-slate-400 mb-1">Status Classification</span>
+                                <div class="text-xl font-bold" id="labelOutput">--</div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold text-slate-400 mb-2">
+                                    <span>Calculated Churn Likelihood</span>
+                                    <span id="probabilityText">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                                    <div id="progressBar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <p class="text-[11px] text-slate-500 mt-1.5 font-mono">Classification cutoff configured at 30.0%</p>
+                            </div>
+                            <div class="border-t border-slate-800 pt-4">
+                                <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Operational Protocol</span>
+                                <p class="text-sm text-slate-300" id="recommendationOutput">--</p>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Batch Prediction Container -->
+                        <div id="batchOutput" class="space-y-4 hidden">
+                            <div class="bg-emerald-950/20 border border-emerald-800/50 p-4 rounded-xl text-emerald-400 text-sm flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-emerald-400"></span> Batch complete. File saved out.
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-center">
+                                    <span class="text-[10px] uppercase font-semibold text-slate-500 block">Total Inputs</span>
+                                    <span class="text-lg font-bold text-slate-200" id="batchTotal">0</span>
+                                </div>
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-center">
+                                    <span class="text-[10px] uppercase font-semibold text-slate-500 block">Flagged Churn</span>
+                                    <span class="text-lg font-bold text-red-400" id="batchFlagged">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fallback State -->
+                        <div id="emptyState" class="text-center py-20 text-slate-600">
+                            <svg class="mx-auto h-12 w-12 stroke-current mb-3" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-xs font-mono">Awaiting structured interface actions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Client-Side API Communication Logic -->
+    <script>
+        // Update custom file upload text label dynamically
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || "Click to upload or drag your CSV matrix here";
+            document.getElementById('fileLabel').innerText = fileName;
+        });
+
+        // Single Customer API Dispatch
+        document.getElementById('singlePredictForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const payload = {};
+            formData.forEach((value, key) => { payload[key] = parseFloat(value); });
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('emptyState').classList.add('hidden');
+                    document.getElementById('batchOutput').classList.add('hidden');
+                    const output = document.getElementById('singleOutput');
+                    output.classList.remove('hidden');
+
+                    const pct = (data.churn_probability * 100).toFixed(1);
+                    document.getElementById('probabilityText').innerText = `${pct}%`;
+                    document.getElementById('progressBar').style.width = `${pct}%`;
+                    document.getElementById('labelOutput').innerText = data.prediction_label;
+                    document.getElementById('recommendationOutput').innerText = data.recommendation;
+
+                    const container = document.getElementById('badgeContainer');
+                    if (data.churn_prediction === 1) {
+                        container.className = "p-4 rounded-xl border border-red-800 bg-red-950/20 text-red-400 flex flex-col items-center justify-center text-center";
+                        document.getElementById('progressBar').className = "h-full bg-red-500 transition-all duration-500";
+                    } else {
+                        container.className = "p-4 rounded-xl border border-emerald-800 bg-emerald-950/20 text-emerald-400 flex flex-col items-center justify-center text-center";
+                        document.getElementById('progressBar').className = "h-full bg-emerald-500 transition-all duration-500";
+                    }
+                }
+            } catch (err) { alert('API Communication Error: ' + err); }
+        });
+
+        // Batch CSV Upload API Dispatch
+        document.getElementById('batchPredictForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('csvFile');
+            if (!fileInput.files[0]) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/batch_predict', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('emptyState').classList.add('hidden');
+                    document.getElementById('singleOutput').classList.add('hidden');
+                    const output = document.getElementById('batchOutput');
+                    output.classList.remove('hidden');
+
+                    document.getElementById('batchTotal').innerText = data.total_customers;
+                    document.getElementById('batchFlagged').innerText = data.predicted_churners;
+                }
+            } catch (err) { alert('Batch API Error: ' + err); }
+        });
+    </script>
+</body>
+</html>
