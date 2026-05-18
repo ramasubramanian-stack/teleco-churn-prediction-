@@ -13,14 +13,6 @@ This project analyzes the Telco Customer Churn dataset and deploys a production-
 - **Deployment:** Render (free tier compatible)
 - **Threshold:** Optimized at 0.30 for maximum churn detection
 
-## 📊 Model Performance
-
-| Metric | Score |
-|--------|-------|
-| Recall | 82% |
-| Precision | 60% |
-| F1-Score | 70% |
-| Threshold | 0.30 |
 
 **Why recall matters:** Missing a churner (false negative) is more costly than incorrectly flagging a loyal customer (false positive).
 
@@ -47,21 +39,6 @@ python app.py
 
 # 6. Test
 curl http://localhost:8000/
-```
-
-### Deploy to Render
-1. Push code to GitHub
-2. Connect repo to Render
-3. Render auto-deploys using `render.yaml`
-4. Access via `https://your-app.onrender.com`
-
-**See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions**
-
-## 📡 API Usage
-
-### Health Check
-```bash
-curl https://your-app.onrender.com/
 ```
 
 ### Predict Single Customer
@@ -98,34 +75,15 @@ curl https://your-app.onrender.com/api/features
 ├── requirements.txt            # Dependencies
 ├── render.yaml                 # Render config
 ├── README.md                   # This file
-├── DEPLOYMENT_GUIDE.md         # Full deployment docs
 ├── .gitignore                  # Git ignore rules
 ├── data/                       # Dataset (create locally)
 │   └── Telco-Customer-Churn.csv
 ├── models/                     # Trained models (auto-created)
 │   ├── xgb_model.pkl
-│   ├── feature_columns.pkl
-│   └── config.pkl
-└── notebooks/
-    └── EDA.ipynb              # Exploratory analysis
+└── templates/
+    └── index.html             # Exploratory analysis
 ```
 
-## 🔧 Configuration
-
-### Model Hyperparameters
-Edit in `train.py`:
-```python
-THRESHOLD = 0.30              # Prediction threshold
-TEST_SIZE = 0.2               # Train-test split
-RANDOM_STATE = 42             # Reproducibility
-```
-
-### Environment Variables
-```bash
-FLASK_ENV=production          # Run mode
-PORT=8000                     # Server port (auto-set on Render)
-PYTHON_VERSION=3.11           # Python version
-```
 
 ## 📊 Data Overview
 
@@ -150,7 +108,7 @@ PYTHON_VERSION=3.11           # Python version
 Tested three models:
 1. **RandomForest:** 71.7% recall, slower training
 2. **LightGBM:** 82% recall, fast training
-3. **XGBoost:** 82% recall, 3x faster than LightGBM ✓ **Selected**
+3. **XGBoost:** 91% recall ✓ **Selected**
 
 ## 📈 Training Pipeline
 
@@ -228,16 +186,9 @@ Top features driving churn predictions:
 - [ ] API endpoints tested
 - [ ] Custom domain added (optional)
 
-## 📞 Support & Resources
-
-- **Render Docs:** https://render.com/docs
-- **Flask Documentation:** https://flask.palletsprojects.com/
-- **XGBoost Docs:** https://xgboost.readthedocs.io/
-- **Scikit-learn:** https://scikit-learn.org/
-
 ## 📝 License
 
-This project is open source and available under the MIT License.
+This project is open source
 
 ## 🤝 Contributing
 
