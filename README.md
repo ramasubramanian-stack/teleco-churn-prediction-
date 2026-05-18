@@ -197,5 +197,5 @@ Pull requests are welcome! For major changes, please open an issue first.
 ---
 
 **Status:** Production Ready ✓  
-**Last Updated:** January 2024  
-**Maintained By:** Your Name
+**Last Updated:** May 2026  
+**Maintained By:** Ram
