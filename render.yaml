@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: telco-churn-api
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python train.py"
+    startCommand: "gunicorn app:app --workers 4 --worker-class sync --bind 0.0.0.0:$PORT --timeout 60"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: "8000"
