@@ -129,7 +129,7 @@ def predict():
 @app.route('/api/batch_predict', methods=['POST'])
 def batch_predict():
     """
-    Batch predictions from uploaded CSV file
+    Robust batch processing that handles partial, raw, or misaligned test CSV files.
     """
     try:
         if model is None:
@@ -139,45 +139,79 @@ def batch_predict():
             return jsonify({'error': 'No file provided'}), 400
         
         file = request.files['file']
-        
-        # Read CSV
         df = pd.read_csv(file)
         
-        # Ensure all expected columns are present
+        if df.empty:
+            return jsonify({'error': 'The uploaded CSV file contains no data rows.'}), 400
+        
+        # Save a clean copy of whatever the user uploaded to append our results onto
+        results = df.copy()
+        
+        # Standardize column headers by stripping out accidental trailing spaces
+        df.columns = df.columns.str.strip()
+        
+        # 1. Safely handle binary string columns if they exist
+        binary_cols = ["gender", "Partner", "Dependents", "PhoneService", "PaperlessBilling"]
+        for col in binary_cols:
+            if col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].replace({'Yes': 1, 'No': 0, 'Male': 1, 'Female': 0})
+            else:
+                df[col] = 0
+        
+        # 2. Safely handle multi-category one-hot encoding
+        multi_cat = [
+            "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+            "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+            "Contract", "PaymentMethod"
+        ]
+        existing_multi = [c for c in multi_cat if c in df.columns]
+        if existing_multi:
+            df = pd.get_dummies(df, columns=existing_multi, drop_first=True)
+        
+        # 3. Safe extraction for TotalCharges to completely avoid a KeyError
+        if 'TotalCharges' in df.columns:
+            if df['TotalCharges'].dtype == 'object':
+                df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+            fill_value = df['TotalCharges'].median()
+            if pd.isna(fill_value):
+                fill_value = 0
+            df['TotalCharges'] = df['TotalCharges'].fillna(fill_value)
+        else:
+            df['TotalCharges'] = 0
+            
+        # 4. Fill absolute missing feature matrix layers with 0
         for col in feature_columns:
             if col not in df.columns:
                 df[col] = 0
         
-        # Select only feature columns
+        # Force the column sequence to match the model training layout exactly
         input_df = df[feature_columns]
         
-        # Make predictions
+        # Run Matrix Inference
         probabilities = model.predict_proba(input_df)[:, 1]
         predictions = (probabilities >= THRESHOLD).astype(int)
         
-        # Add to dataframe
-        results = df.copy()
+        # Add output metrics onto the user's uploaded spreadsheet copy
         results['churn_probability'] = probabilities
         results['churn_prediction'] = predictions
-        results['prediction_label'] = results['churn_prediction'].map({0: 'Unlikely', 1: 'Likely'})
+        results['prediction_label'] = results['churn_prediction'].map({0: 'Unlikely to Churn', 1: 'Likely to Churn'})
         
-        # Save results
-        results.to_csv('predictions_results.csv', index=False)
+        csv_string = results.to_csv(index=False)
         
         summary = {
             'total_customers': len(results),
-            'predicted_churners': int(results['churn_prediction'].sum()),
-            'churn_rate': float(results['churn_prediction'].mean()),
-            'avg_churn_probability': float(results['churn_probability'].mean()),
-            'file_saved': 'predictions_results.csv'
+            'predicted_churners': int(predictions.sum()),
+            'churn_rate': float(predictions.mean()),
+            'avg_churn_probability': float(probabilities.mean()),
+            'csv_string': csv_string
         }
         
         return jsonify(summary), 200
         
     except Exception as e:
-        logger.error(f"Batch prediction error: {str(e)}")
+        logger.error(f"Batch processing exception raised: {str(e)}")
         return jsonify({'error': str(e)}), 400
-
 @app.route('/api/features', methods=['GET'])
 def get_features():
     """Return list of expected features"""
